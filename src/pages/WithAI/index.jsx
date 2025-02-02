@@ -2,7 +2,7 @@ import { LeftSection, RightSection, Wrapper } from "./styles";
 import ChatComponent from "./ChatComponent";
 import Component3D from "./Component3D";
 
-export default function Home() {
+export default function WithAI({ model }) {
   return (
     <Wrapper>
       <LeftSection>
@@ -10,7 +10,7 @@ export default function Home() {
       </LeftSection>
 
       <RightSection>
-        <ChatComponent />
+        <ChatComponent model={model} />
       </RightSection>
     </Wrapper>
   );

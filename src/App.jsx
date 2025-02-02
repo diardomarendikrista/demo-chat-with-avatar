@@ -1,6 +1,5 @@
 import Home from "pages/Home/index";
-import Deepseek from "pages/Deepseek";
-import OpenAI from "pages/OpenAI";
+import WithAI from "pages/WithAI";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 function App() {
@@ -13,12 +12,12 @@ function App() {
             element={<Home />}
           />
           <Route
-            path="deepseek"
-            element={<Deepseek />}
+            path="openai"
+            element={<WithAI model={"openai"} />}
           />
           <Route
-            path="openai"
-            element={<OpenAI />}
+            path="gemini"
+            element={<WithAI model={"gemini"} />}
           />
         </Routes>
       </BrowserRouter>

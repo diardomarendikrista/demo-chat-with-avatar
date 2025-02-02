@@ -14,7 +14,7 @@ import { useAtom } from "jotai";
 import { isTalkingAtom } from "pages/Home/store";
 import axios from "axios";
 
-export default function ChatComponent() {
+export default function ChatComponent({ model }) {
   const [, setIsTalking] = useAtom(isTalkingAtom);
   const [init, setInit] = useState(true); // prevent double 1st message at development (due to strictmode)
 
@@ -23,6 +23,13 @@ export default function ChatComponent() {
   const [message, setMessage] = useState(""); // buat inputan yang kita ketik
 
   const messageSectionRef = useRef(null);
+
+  const modelText =
+    model === "openai"
+      ? "OpenAI"
+      : model === "gemini"
+        ? "Gemini"
+        : "Invalid Model";
 
   const handleSendMessage = (e) => {
     e?.preventDefault();
@@ -41,8 +48,17 @@ export default function ChatComponent() {
     handleAISendMessage(messageToAI);
   };
 
-  // ini buat demo aja ya.
   const handleAISendMessage = async (newMessages) => {
+    if (model === "openai") {
+      handleOpenAISendMessage(newMessages);
+    } else if (model === "gemini") {
+      handleGeminiSendMessage(newMessages);
+    } else {
+      console.log("error AI model not found");
+    }
+  };
+
+  const handleGeminiSendMessage = async (newMessages) => {
     try {
       setAiLoading(true);
       // kasih baloon loading
@@ -51,7 +67,63 @@ export default function ChatComponent() {
         id: "loading", // Add an id for tracking (yang nantinya dihapus)
       };
       setMessages((prevMessages) => [...prevMessages, loadingMessage]);
-      const response = await axios.post("/.netlify/functions/chat", {
+      const response = await axios.post("/.netlify/functions/chat-gemini", {
+        messages: newMessages,
+      });
+
+      console.log(response, "DAPAT APA?");
+
+      const botMessage = response.data.candidates[0].content.parts[0].text;
+
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // hapus ballon loading
+      setMessages((prevMessages) =>
+        prevMessages.filter((msg) => msg.id !== "loading")
+      );
+
+      // kasih chat
+      const newMessage = {
+        message: botMessage,
+      };
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+      setIsTalking(true);
+      // scroll to bottom
+      setTimeout(() => {
+        messageSectionRef.current.scrollTop =
+          messageSectionRef.current.scrollHeight;
+      }, 100);
+    } catch (error) {
+      console.log(error, "error handleAISendMessage");
+      if (error?.response?.data?.error?.message) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        // hapus ballon loading
+        setMessages((prevMessages) =>
+          prevMessages.filter((msg) => msg.id !== "loading")
+        );
+
+        const newMessage = {
+          message: error?.response?.data?.error?.message,
+        };
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
+        setIsTalking(true);
+      }
+    } finally {
+      await new Promise((resolve) => setTimeout(resolve, 5500));
+      setAiLoading(false);
+      setIsTalking(false);
+    }
+  };
+
+  const handleOpenAISendMessage = async (newMessages) => {
+    try {
+      setAiLoading(true);
+      // kasih baloon loading
+      const loadingMessage = {
+        message: ". . .",
+        id: "loading", // Add an id for tracking (yang nantinya dihapus)
+      };
+      setMessages((prevMessages) => [...prevMessages, loadingMessage]);
+      const response = await axios.post("/.netlify/functions/chat-openai", {
         messages: newMessages,
       });
 
@@ -112,7 +184,7 @@ export default function ChatComponent() {
   return (
     <ContainerChat>
       <ChatHeader>
-        <div className="title">I WISH - OpenAI</div>
+        <div className="title">I WISH - {modelText}</div>
         <div>Your AI Companion</div>
       </ChatHeader>
 

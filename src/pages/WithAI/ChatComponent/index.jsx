@@ -71,8 +71,6 @@ export default function ChatComponent({ model }) {
         messages: newMessages,
       });
 
-      console.log(response, "DAPAT APA?");
-
       const botMessage = response.data.candidates[0].content.parts[0].text;
 
       await new Promise((resolve) => setTimeout(resolve, 2000));

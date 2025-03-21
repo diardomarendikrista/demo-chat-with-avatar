@@ -77,6 +77,30 @@ const Avatar = memo(() => {
     }
   }, [isTalking]);
 
+  useEffect(() => {
+    const handleAnimationEvent = (event) => {
+      const { action } = event.detail;
+
+      if (action === "talk") {
+        if (actions["M_Standing_Idle_001"]?.isRunning()) {
+          actions["M_Standing_Idle_001"]?.fadeOut(0.5); // Fade out idle
+          actions["M_Talking_Variations_007"]?.reset().fadeIn(0.5).play(); // Play talking
+        }
+      } else if (action === "idle") {
+        if (actions["M_Talking_Variations_007"]?.isRunning()) {
+          actions["M_Talking_Variations_007"]?.fadeOut(0.5); // Fade out talking
+          actions["M_Standing_Idle_001"]?.reset().fadeIn(0.5).play(); // Play idle
+        }
+      }
+    };
+
+    window.addEventListener("animationEvent", handleAnimationEvent);
+
+    return () => {
+      window.removeEventListener("animationEvent", handleAnimationEvent);
+    };
+  }, [actions]);
+
   // hati2 ya, ini render per frame, bukan kaya useEffect
   useFrame(() => {
     // Reset the position of the hips bone for fix bug from model (bug dari readyplayer me)

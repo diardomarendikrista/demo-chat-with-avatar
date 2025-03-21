@@ -13,6 +13,8 @@ import { Button, Input } from "antd";
 import { useAtom } from "jotai";
 import { isTalkingAtom } from "pages/Home/store";
 
+let currentExecutionId = 0; // Digunakan untuk melacak eksekusi terakhir
+
 export default function ChatComponent() {
   const [, setIsTalking] = useAtom(isTalkingAtom);
   const [init, setInit] = useState(true); // prevent double 1st message at development (due to strictmode)
@@ -22,6 +24,7 @@ export default function ChatComponent() {
   const [message, setMessage] = useState(""); // buat inputan yang kita ketik
 
   const messageSectionRef = useRef(null);
+  let cancelToken = useRef(null);
 
   const handleSendMessage = (e) => {
     e?.preventDefault();
@@ -39,10 +42,10 @@ export default function ChatComponent() {
     handleAISendMessage();
   };
 
-  // ini buat demo aja ya.
   const handleAISendMessage = async () => {
-    setAiLoading(true);
-    // kasih baloon loading
+    const executionId = ++currentExecutionId; // Buat ID unik untuk setiap eksekusi
+    triggerAnimation("idle");
+
     const loadingMessage = {
       message: ". . .",
       id: "loading", // Add an id for tracking (yang nantinya dihapus)
@@ -50,27 +53,30 @@ export default function ChatComponent() {
     setMessages((prevMessages) => [...prevMessages, loadingMessage]);
 
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    // hapus ballon loading
+
+    if (executionId !== currentExecutionId) return; // Abaikan jika bukan eksekusi terakhir
+
     setMessages((prevMessages) =>
       prevMessages.filter((msg) => msg.id !== "loading")
     );
 
-    // kasih chat
     const newMessage = {
       message:
         "Nostrud reprehenderit proident mollit deserunt dolore tempor ullamco. Ad exercitation laboris eiusmod ullamco ea. Qui ad sunt consectetur in nulla eiusmod minim excepteur.",
     };
     setMessages((prevMessages) => [...prevMessages, newMessage]);
-    setIsTalking(true);
-    // scroll to bottom
+    triggerAnimation("talk");
+
     setTimeout(() => {
       messageSectionRef.current.scrollTop =
         messageSectionRef.current.scrollHeight;
     }, 100);
 
     await new Promise((resolve) => setTimeout(resolve, 5500));
+    if (executionId !== currentExecutionId) return; // Abaikan jika bukan eksekusi terakhir
+
     setAiLoading(false);
-    setIsTalking(false);
+    triggerAnimation("idle");
   };
 
   useEffect(() => {
@@ -82,6 +88,13 @@ export default function ChatComponent() {
     setInit(false);
   }, []);
 
+  const triggerAnimation = (action) => {
+    const event = new CustomEvent("animationEvent", {
+      detail: { action },
+    });
+    window.dispatchEvent(event);
+  };
+
   return (
     <ContainerChat>
       <ChatHeader>
@@ -90,14 +103,14 @@ export default function ChatComponent() {
           <Button
             type="primary"
             htmlType="button"
-            onClick={() => setIsTalking(true)}
+            onClick={() => triggerAnimation("talk")}
           >
             Talk
           </Button>
           <Button
             type="primary"
             htmlType="button"
-            onClick={() => setIsTalking(false)}
+            onClick={() => triggerAnimation("idle")}
           >
             Idle
           </Button>

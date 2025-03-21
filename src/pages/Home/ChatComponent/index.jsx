@@ -85,10 +85,25 @@ export default function ChatComponent() {
   return (
     <ContainerChat>
       <ChatHeader>
-        <div className="title">I WISH</div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className="title">I WISH</div>
+          <Button
+            type="primary"
+            htmlType="button"
+            onClick={() => setIsTalking(true)}
+          >
+            Talk
+          </Button>
+          <Button
+            type="primary"
+            htmlType="button"
+            onClick={() => setIsTalking(false)}
+          >
+            Idle
+          </Button>
+        </div>
         <div>Your AI Companion</div>
       </ChatHeader>
-
       <MessageSection ref={messageSectionRef}>
         {messages.map((item, i) => (
           <MessageWrapper
@@ -99,7 +114,6 @@ export default function ChatComponent() {
           </MessageWrapper>
         ))}
       </MessageSection>
-
       <form onSubmit={handleSendMessage}>
         <InputSection>
           <InputWrapper>

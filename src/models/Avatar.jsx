@@ -43,17 +43,51 @@ const Avatar = memo(() => {
     };
   }, [animation, actions]);
 
+  // debug keyboard
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "[") {
+        if (actions["M_Talking_Variations_007"]?.isRunning()) {
+          actions["M_Talking_Variations_007"]?.fadeOut(0.5); // Fade out the talking animation
+          actions["M_Standing_Idle_001"]?.reset().fadeIn(0.5).play(); // Play idle animation
+        }
+      } else if (event.key === "]") {
+        if (actions["M_Standing_Idle_001"]?.isRunning()) {
+          actions["M_Standing_Idle_001"]?.fadeOut(0.5); // Fade out the idle animation
+          actions["M_Talking_Variations_007"]?.reset().fadeIn(0.5).play(); // Play talking animation
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    if (isTalking) {
+      if (actions["M_Standing_Idle_001"]?.isRunning()) {
+        actions["M_Standing_Idle_001"]?.fadeOut(0.5); // Fade out the idle animation
+        actions["M_Talking_Variations_007"]?.reset().fadeIn(0.5).play(); // Play talking animation
+      }
+    } else {
+      if (actions["M_Talking_Variations_007"]?.isRunning()) {
+        actions["M_Talking_Variations_007"]?.fadeOut(0.5); // Fade out the talking animation
+        actions["M_Standing_Idle_001"]?.reset().fadeIn(0.5).play(); // Play idle animation
+      }
+    }
+  }, [isTalking]);
+
   // hati2 ya, ini render per frame, bukan kaya useEffect
   useFrame(() => {
     // Reset the position of the hips bone for fix bug from model (bug dari readyplayer me)
     const hips = avatarRef.current?.getObjectByName("Hips");
     if (hips) hips.position.set(0, hips.position.y, 0);
 
-    if (isTalking) {
-      setAnimation("M_Talking_Variations_007");
-    } else {
-      setAnimation("M_Standing_Idle_001");
-    }
+    // if (isTalking) {
+    // setAnimation("M_Talking_Variations_007");
+    // } else {
+    // setAnimation("M_Standing_Idle_001");
+    // }
   });
 
   return (

@@ -114,6 +114,22 @@ export default function ChatComponent() {
           >
             Idle
           </Button>
+          <div>-</div>
+
+          <Button
+            type="primary"
+            htmlType="button"
+            onClick={() => setIsTalking(true)}
+          >
+            Talk
+          </Button>
+          <Button
+            type="primary"
+            htmlType="button"
+            onClick={() => setIsTalking(false)}
+          >
+            Idle
+          </Button>
         </div>
         <div>Your AI Companion</div>
       </ChatHeader>
